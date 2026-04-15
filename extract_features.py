@@ -84,7 +84,7 @@ def run(max_steps=64e3, mode='rgb', root='/ssd2/charades/Charades_v1_rgb', batch
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])     
 
     dataset = CustomDataset(root, mode, test_transforms, save_dir=save_dir)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
     dataloaders = {'val': dataloader}
     datasets = {'val': dataset}
@@ -95,8 +95,12 @@ def run(max_steps=64e3, mode='rgb', root='/ssd2/charades/Charades_v1_rgb', batch
         i3d = InceptionI3d(400, in_channels=2)
     else:
         i3d = InceptionI3d(400, in_channels=3)
-    i3d.replace_logits(157)
-    i3d.load_state_dict(torch.load(load_model))
+        
+    state_dict = torch.load(load_model)
+    num_classes = state_dict['logits.conv3d.weight'].shape[0]
+    i3d.replace_logits(num_classes)
+    i3d.load_state_dict(state_dict)
+    
     i3d.cuda()
 
     for phase in ['val']:
