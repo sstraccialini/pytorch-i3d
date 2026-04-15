@@ -84,7 +84,8 @@ def run(max_steps=64e3, mode='rgb', root='/ssd2/charades/Charades_v1_rgb', batch
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])     
 
     dataset = CustomDataset(root, mode, test_transforms, save_dir=save_dir)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    # Set num_workers=0 to prevent OOM errors from multiple workers loading large frame tensors into RAM
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=False)
 
     dataloaders = {'val': dataloader}
     datasets = {'val': dataset}
