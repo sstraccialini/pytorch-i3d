@@ -181,7 +181,8 @@ def main():
                 start_t = row[CONFIG["col_start"]] / CONFIG["annotation_fps"]
                 end_t = row[CONFIG["col_end"]] / CONFIG["annotation_fps"]
                 
-                if end_t <= start_t:
+                # Check for strictly invalid ranges (e.g. end is BEFORE start)
+                if end_t < start_t:
                     print(f"Warning: Invalid time range in {video_id}: {start_t} to {end_t}")
                     continue
                     
