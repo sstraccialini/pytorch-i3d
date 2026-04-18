@@ -114,11 +114,15 @@ def main():
         
     df = pd.concat(dfs, ignore_index=True)
     
-    # 2. Build class mapping mapping dynamically if needed, 
-    # but TSU has 51 classes. We just extract unique lexicographically.
+    # Clean up whitespace in labels
+    df[CONFIG["col_label"]] = df[CONFIG["col_label"]].str.strip()
+    
+    # 2. Build class mapping mapping dynamically dynamically
     unique_classes = sorted(df[CONFIG["col_label"]].dropna().unique().tolist())
-    if len(unique_classes) > CONFIG["num_classes"]:
-        print(f"Warning: Found {len(unique_classes)} classes, expected {CONFIG['num_classes']}")
+    actual_num_classes = len(unique_classes)
+    
+    if actual_num_classes != CONFIG["num_classes"]:
+        print(f"Warning: Found {actual_num_classes} classes, expected {CONFIG['num_classes']}")
         
     class_to_idx = {cls_name: i for i, cls_name in enumerate(unique_classes)}
     
@@ -163,8 +167,8 @@ def main():
             
         valid_segments = determine_valid_segments(features)
         
-        # Initialize label matrix
-        labels = np.zeros((CONFIG["max_segments"], CONFIG["num_classes"]), dtype=np.float32)
+        # Initialize label matrix dynamically sized to the actual number of unique classes found
+        labels = np.zeros((CONFIG["max_segments"], actual_num_classes), dtype=np.float32)
         
         # Populate labels if annotations exist
         if video_id in video_groups.groups:
