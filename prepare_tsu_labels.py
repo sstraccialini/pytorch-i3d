@@ -17,12 +17,13 @@ CONFIG = {
     
     # CSV Column Names
     "col_video_id": "video_id",
-    "col_label": "action",
-    "col_start": "start_time",
-    "col_end": "end_time",
+    "col_label": "event",
+    "col_start": "start_frame",
+    "col_end": "end_frame",
     
     # Task specific constants
-    "fps": 10.0,
+    "annotation_fps": 30.0,                # Original FPS of the video (used to convert frames to seconds)
+    "feature_fps": 10.0,                   # FPS the features were extracted at
     "frames_per_segment": 16,
     "max_segments": 2500,
     "num_classes": 51,
@@ -32,7 +33,7 @@ CONFIG = {
 }
 
 # Calculated constants
-SECONDS_PER_SEGMENT = CONFIG["frames_per_segment"] / CONFIG["fps"]
+SECONDS_PER_SEGMENT = CONFIG["frames_per_segment"] / CONFIG["feature_fps"]
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -171,8 +172,10 @@ def main():
             
             for _, row in video_annos.iterrows():
                 action = row[CONFIG["col_label"]]
-                start_t = row[CONFIG["col_start"]]
-                end_t = row[CONFIG["col_end"]]
+                
+                # Convert frames to seconds
+                start_t = row[CONFIG["col_start"]] / CONFIG["annotation_fps"]
+                end_t = row[CONFIG["col_end"]] / CONFIG["annotation_fps"]
                 
                 if end_t <= start_t:
                     print(f"Warning: Invalid time range in {video_id}: {start_t} to {end_t}")
